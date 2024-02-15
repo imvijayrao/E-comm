@@ -1,9 +1,14 @@
 package com.example.product.controllers;
 
 import com.example.product.dtos.ProductRequestDto;
+import com.example.product.dtos.ProductWrapper;
 import com.example.product.models.Product;
 import com.example.product.services.IProductService;
+import com.example.product.services.InvalidProductIdException;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -18,13 +23,23 @@ public class ProductController {
     // Get all the products
     @GetMapping("/products")
     public List<Product> getAllProducts(){
-        return new ArrayList<>();
+        return productService.getAllProducts();
     }
 
     // Get a product with Id
     @GetMapping("/products/{id}")
-    public Product getSingleProduct(@PathVariable("id") Long id){
-        return productService.getSingleProduct(id);
+    public ResponseEntity<ProductWrapper> getSingleProduct(@PathVariable("id") Long id)  {
+
+        ResponseEntity<ProductWrapper> response;
+        try {
+            Product singleProduct = productService.getSingleProduct(id);
+            ProductWrapper productWrapper = new ProductWrapper(singleProduct, "Successfully retried the data");
+            response = new ResponseEntity<>(productWrapper, HttpStatus.OK);
+        } catch (InvalidProductIdException e) {
+            ProductWrapper productWrapper = new ProductWrapper(null, "Product is not present ");
+            response =  new ResponseEntity<>(productWrapper, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return response;
     }
 
     @PostMapping("/products")
@@ -35,7 +50,7 @@ public class ProductController {
     @PutMapping("/products/{id}")
     public Product updateProduct(@PathVariable("id") Long id,
                                  @RequestBody ProductRequestDto productRequestDto){
-        return new Product();
+        return productService.updateProduct(id, productRequestDto);
     }
 
     @DeleteMapping("/products/{id}")
