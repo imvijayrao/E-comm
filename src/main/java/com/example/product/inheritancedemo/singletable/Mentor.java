@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-//@Entity(name = "st_mentor")
+@Entity
 @DiscriminatorValue("1")
 public class Mentor extends User {
 

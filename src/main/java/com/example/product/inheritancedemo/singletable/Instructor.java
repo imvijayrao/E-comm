@@ -8,9 +8,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-//@Entity(name = "st_instructor")
+@Entity
 @DiscriminatorValue("2")
 public class Instructor extends User {
 
+    private String company;
     private String specialization;
 }
