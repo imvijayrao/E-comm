@@ -24,7 +24,18 @@ public class ProductController {
     // Get all the products
     @GetMapping("/products")
     public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+
+        // The controllers responsibility is to return the products whose name starts with 'A'
+
+        List<Product> allProducts = productService.getAllProducts();
+        ArrayList<Product> filteredProducts = new ArrayList<>();
+        for(Product product: allProducts){
+            if(product.getName().startsWith("a"))
+            {
+                filteredProducts.add(product);
+            }
+        }
+        return filteredProducts;
     }
 
     // Get a product with Id

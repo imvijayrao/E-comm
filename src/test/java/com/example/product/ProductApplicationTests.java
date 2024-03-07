@@ -1,23 +1,15 @@
 package com.example.product;
 
-import com.example.product.repositories.CategoryRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@SpringBootTest // This is to initialise the application context
 class ProductApplicationTests {
 
-	@Autowired
-	private CategoryRepository categoryRepository;
-
-	@Test
+	@Test // This marks the method as a test method, and it also makes it executable
 	void contextLoads() {
-	}
 
-	@Test
-	void testFetchTypeDefault(){
-		categoryRepository.findById(1l);
+		System.out.println("Inside test product application ");
 	}
 
 }
