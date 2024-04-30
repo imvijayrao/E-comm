@@ -1,14 +1,17 @@
 package com.example.product.controllers;
 
+import com.example.product.dtos.CreateProductRequestDto;
 import com.example.product.dtos.ProductRequestDto;
 import com.example.product.dtos.ProductWrapper;
 import com.example.product.models.Product;
 import com.example.product.services.IProductService;
 import com.example.product.exception.InvalidProductIdException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +20,23 @@ import java.util.List;
 public class ProductController {
 
     @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
     private IProductService productService;
+
+    //print name
+    @PostMapping("/product/name")
+    public String displayname(){
+        return "Name: Vijay rao, phn no: 9789691070";
+    }
+
+    @GetMapping("/products/search")
+    public Page<Product> getProductByName(@RequestParam("name") String name,
+                                          @RequestParam("pageSize") int pageSize,
+                                          @RequestParam("startingIndex") int startingIndex){
+        return productService.getProductByName(name, pageSize, startingIndex);
+    }
 
     // Get all the products
     @GetMapping("/products")
@@ -27,12 +46,10 @@ public class ProductController {
 
         List<Product> allProducts = productService.getAllProducts();
         ArrayList<Product> filteredProducts = new ArrayList<>();
-        for(Product product: allProducts){
-            if(product.getName().startsWith("a"))
+        for(Product product: allProducts)
             {
                 filteredProducts.add(product);
             }
-        }
         return filteredProducts;
     }
 
@@ -58,10 +75,18 @@ public class ProductController {
         return productService.updateProduct(id, productRequestDto);
     }
 
-
     @DeleteMapping("/products/{id}")
     public boolean deleteProduct(@PathVariable("id") Long id) {
         return true;
+    }
+
+    @PostMapping("/products/create")
+    public void createNewProduct(@RequestBody CreateProductRequestDto createProductRequestDto){
+        Boolean userValidation = restTemplate.getForObject("http://userservice/validateEmail", Boolean.class);
+        if(userValidation){
+            return productService.createProduct
+                    (createProductRequestDto);
+        }
     }
 
 

@@ -1,11 +1,16 @@
 package com.example.product.services;
 
+import com.example.product.dtos.CreateProductRequestDto;
 import com.example.product.dtos.ProductRequestDto;
 import com.example.product.dtos.ProductResponseDto;
 import com.example.product.exception.InvalidProductIdException;
 import com.example.product.models.Category;
 import com.example.product.models.Product;
+import com.example.product.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpMessageConverterExtractor;
@@ -14,12 +19,19 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class FakeStoreProductService implements IProductService{
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private RedisTemplate<String, Long> redisTemplate;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     public Product getProductFromResponseDto(ProductResponseDto responseDto){
         Product product = new Product();
@@ -39,7 +51,11 @@ public class FakeStoreProductService implements IProductService{
     @Override
     public Product getSingleProduct(Long id) throws InvalidProductIdException {
 
-        if(id>20){
+        if(redisTemplate.opsForHash().hasKey("PRODUCTS", id)){
+            return (Product) redisTemplate.opsForHash().get("PRODUCTS", id);
+        }
+
+        if(id>20 && id<=40){
             throw new InvalidProductIdException();
         }
 
@@ -48,7 +64,12 @@ public class FakeStoreProductService implements IProductService{
         ProductResponseDto response = restTemplate.getForObject("https://fakestoreapi.com/products/" + id,
                 ProductResponseDto.class);
 
-        return getProductFromResponseDto(response);
+        Product product = getProductFromResponseDto(response);
+
+        redisTemplate.opsForHash().put("PRODUCTS", id, product);
+        redisTemplate.opsForValue().set("PRODUCTS", id, 5, TimeUnit.MINUTES);
+
+        return product;
     }
 
     @Override
@@ -86,5 +107,18 @@ public class FakeStoreProductService implements IProductService{
 //
 //        // But, I want to get the updated object.
 //        return getSingleProduct(id);
+    }
+
+    @Override
+    public Page<Product> getProductByName(String name, int pageSize, int startingIndex) {
+        Page<Product> productPage = productRepository.findAllByNameContaining(
+                name, PageRequest.of(startingIndex/pageSize,pageSize));
+
+        return productPage;
+    }
+
+    @Override
+    public void createProduct(CreateProductRequestDto createProductRequestDto) {
+
     }
 }
