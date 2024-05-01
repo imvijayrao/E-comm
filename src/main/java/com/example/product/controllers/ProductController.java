@@ -1,6 +1,7 @@
 package com.example.product.controllers;
 
 import com.example.product.dtos.CreateProductRequestDto;
+import com.example.product.dtos.ErrorResponseDto;
 import com.example.product.dtos.ProductRequestDto;
 import com.example.product.dtos.ProductWrapper;
 import com.example.product.models.Product;
@@ -9,6 +10,7 @@ import com.example.product.exception.InvalidProductIdException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -81,13 +83,23 @@ public class ProductController {
     }
 
     @PostMapping("/products/create")
-    public void createNewProduct(@RequestBody CreateProductRequestDto createProductRequestDto){
-        Boolean userValidation = restTemplate.getForObject("http://userservice/validateEmail", Boolean.class);
+    public ResponseEntity<ErrorResponseDto> createNewProduct(@RequestBody CreateProductRequestDto createProductRequestDto){
+        ErrorResponseDto responseDto = new ErrorResponseDto();
+        Boolean userValidation = restTemplate.getForObject("http://userservice/validateEmail/"+createProductRequestDto.getUserEmail(), Boolean.class);
         if(userValidation){
-            return productService.createProduct
+            System.out.println("Trying to create new product");
+            productService.createProduct
                     (createProductRequestDto);
+            System.out.println("Product is created successfully");
+            responseDto.setMessage("Valid User and product is created");
+            responseDto.setStatus(200);
+            return new ResponseEntity<>(responseDto,HttpStatus.OK);
+        }
+        else{
+            responseDto.setMessage("User with Email:"+createProductRequestDto.getUserEmail()+"doesn't exist");
+            responseDto.setStatus(404);
+            return new ResponseEntity<>(responseDto, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 
 }

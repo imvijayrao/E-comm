@@ -1,1 +1,0 @@
-alter table category add description varchar(10) null;

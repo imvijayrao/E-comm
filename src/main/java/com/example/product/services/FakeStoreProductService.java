@@ -6,6 +6,7 @@ import com.example.product.dtos.ProductResponseDto;
 import com.example.product.exception.InvalidProductIdException;
 import com.example.product.models.Category;
 import com.example.product.models.Product;
+import com.example.product.repositories.CategoryRepository;
 import com.example.product.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,7 +19,9 @@ import org.springframework.web.client.RequestCallback;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -33,6 +36,9 @@ public class FakeStoreProductService implements IProductService{
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     public Product getProductFromResponseDto(ProductResponseDto responseDto){
         Product product = new Product();
         product.setId(responseDto.getId());
@@ -41,7 +47,7 @@ public class FakeStoreProductService implements IProductService{
         product.setDescription(responseDto.getDescription());
         product.setImage(responseDto.getImage());
 
-        Category category = new Category();
+        Category category = new Category(responseDto.getCategory());
         category.setName(responseDto.getCategory());
 
         product.setCategory(category);
@@ -119,6 +125,27 @@ public class FakeStoreProductService implements IProductService{
 
     @Override
     public void createProduct(CreateProductRequestDto createProductRequestDto) {
+        Product product = new Product();
+        product.setName(createProductRequestDto.getTitle());
+        product.setPrice(createProductRequestDto.getPrice());
+        product.setCreatedAt(new Date());
 
+        Optional<Category> optionalCategory = Optional.ofNullable(categoryRepository.findByName(createProductRequestDto.getCategory()));
+        Category category;
+
+        if(optionalCategory.isEmpty()){
+            category = new Category(createProductRequestDto.getCategory());
+            category.setCreatedAt(new Date());
+            categoryRepository.save(category);
+        }
+        else{
+            category = optionalCategory.get();
+        }
+
+        product.setCategory(category);
+
+        productRepository.save(product);
+
+        System.out.println("Created new Product");
     }
 }

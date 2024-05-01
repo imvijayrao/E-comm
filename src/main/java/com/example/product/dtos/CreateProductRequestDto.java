@@ -9,5 +9,7 @@ public class CreateProductRequestDto {
 
     private String title;
     private int price;
+    private String category;
     private String userEmail;
+
 }

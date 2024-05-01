@@ -1,1 +1,0 @@
-alter table category add amount double null;

@@ -14,12 +14,12 @@ public class GlobalControllerAdvice {
 
     @ExceptionHandler(ArithmeticException.class)
     public ResponseEntity<ErrorResponseDto> handleArithmaticException() {
-        return new ResponseEntity<>(new ErrorResponseDto("Divide by zero"), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(new ErrorResponseDto(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 
     @ExceptionHandler(InvalidProductIdException.class)
     public ResponseEntity<ErrorResponseDto> handleInvlaidProduct() {
-        return new ResponseEntity<>(new ErrorResponseDto("Invalid product from global"), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorResponseDto(), HttpStatus.NOT_FOUND);
     }
 }
