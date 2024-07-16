@@ -61,9 +61,9 @@ public class FakeStoreProductService implements IProductService{
             return (Product) redisTemplate.opsForHash().get("PRODUCTS", id);
         }
 
-        if(id>20 && id<=40){
-            throw new InvalidProductIdException();
-        }
+//        if(id>20 && id<=40){
+//            throw new InvalidProductIdException();
+//        }
 
         // I should pass this 'id' to fakestore and get the details of this product.
         // "https://fakestoreapi.com/products/1"

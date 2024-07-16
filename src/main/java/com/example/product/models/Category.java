@@ -17,9 +17,13 @@ import java.util.List;
 public class Category extends BaseModel implements Serializable {
 
     private String name;
+    private double price;
+    private String description;
+    private double amount;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.EAGER)
     private List<Product> products;
+
 
     public Category(){
     }
